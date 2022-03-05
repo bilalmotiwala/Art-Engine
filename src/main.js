@@ -1,30 +1,8 @@
-const basePath = process.cwd();
-const { NETWORK } = require(`${basePath}/constants/network.js`);
-const fs = require("fs");
-const sha1 = require(`${basePath}/node_modules/sha1`);
-const { createCanvas, loadImage } = require(`${basePath}/node_modules/canvas`);
-const buildDir = `${basePath}/build`;
-const layersDir = `${basePath}/layers`;
-const {
-  format,
-  baseUri,
-  description,
-  background,
-  uniqueDnaTorrance,
-  layerConfigurations,
-  rarityDelimiter,
-  shuffleLayerConfigurations,
-  debugLogs,
-  extraMetadata,
-  text,
-  namePrefix,
-  network,
-  solanaMetadata,
-  gif,
-} = require(`${basePath}/src/config.js`);
+//Creation of the Original Main Canvas
 const canvas = createCanvas(format.width, format.height);
 const ctx = canvas.getContext("2d");
 ctx.imageSmoothingEnabled = format.smoothing;
+
 var metadataList = [];
 var attributesList = [];
 var dnaList = new Set();
@@ -95,6 +73,14 @@ const layersSetup = (layersOrder) => {
       layerObj.options?.["blend"] != undefined
         ? layerObj.options?.["blend"]
         : "source-over",
+    blend2:
+      layerObj.options?.["blend2"] != undefined
+      ? layerObj.options?.["blend2"]
+      : "source-over",
+    blend3:
+    layerObj.options?.["blend3"] != undefined
+    ? layerObj.options?.["blend3"]
+    : "source-over",
     opacity:
       layerObj.options?.["opacity"] != undefined
         ? layerObj.options?.["opacity"]
@@ -136,7 +122,7 @@ const addMetadata = (_dna, _edition) => {
     date: dateTime,
     ...extraMetadata,
     attributes: attributesList,
-    author: "MY AUTHOR NAME HERE",
+    author: "Your Name Here",
   };
   if (network == NETWORK.sol) {
     tempMetadata = {
@@ -186,6 +172,13 @@ const addAttributes = (_element) => {
 
     let bracketextractiondata = /[^{}]+(?=})/g;
     arrayedtraitsandvalues = additionalmetadata.match(bracketextractiondata);
+
+    if(!arrayedtraitsandvalues || arrayedtraitsandvalues == null || !arrayedtraitsandvalues.length || arrayedtraitsandvalues.length == null){
+      attributesList.push({
+      trait_type: _element.layer.name,
+      value: basemetadata,
+    })
+    } else {
     var reqarrayedtraitsandvalues = arrayedtraitsandvalues.length / 2;
 
     attributesList.push({
@@ -199,7 +192,9 @@ const addAttributes = (_element) => {
         value: arrayedtraitsandvalues[i + 1],
       });
     }
-  }
+    }
+
+    }
 };
 
 const addBoosts = () => {
@@ -212,7 +207,7 @@ const addBoosts = () => {
 
   attributesList.push({
     display_type: "boost_percentage",
-    trait_type: "ABV",
+    trait_type: "Trait Name",
     value: abv_values[random_abv],
   });
 };
@@ -233,8 +228,8 @@ const addText = (_sig, x, y, size) => {
 };
 
 const drawElement = (_renderObject, _index, _layersLen) => {
-  ctx.globalAlpha = _renderObject.layer.opacity;
   ctx.globalCompositeOperation = _renderObject.layer.blend;
+  ctx.globalAlpha = _renderObject.layer.opacity;
   text.only
     ? addText(
         `${_renderObject.layer.name}${text.spacer}${_renderObject.layer.selectedElement.name}`,
